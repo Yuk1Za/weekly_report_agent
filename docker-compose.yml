@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  weekly-report-agent:
+    build: .
+    container_name: weekly-report-agent
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
+      - TZ=Asia/Shanghai  # 设置时区为北京时间
+    volumes:
+      - ./logs:/app/logs
+      - ./.env:/app/.env
+    restart: unless-stopped
+    networks:
+      - agent-network
+
+  # 可选：Redis 用于缓存
+  redis:
+    image: redis:7-alpine
+    container_name: report-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - agent-network
+
+volumes:
+  redis-data:
+
+networks:
+  agent-network:
+    driver: bridge
